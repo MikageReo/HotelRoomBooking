@@ -2,7 +2,7 @@
 
 namespace HotelRoomBooking.Databases
 {
-    public static class Room1DataSeeder
+    public static class RoomDataSeeder
     {
         public static void Seed(HotelDBContext hotelDBContext)
         {
