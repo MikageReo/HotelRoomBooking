@@ -40,15 +40,15 @@ The unit tests are built using xUnit alongside Moq for mocking dependencies. The
 
 **Suggested Features Implemented**
 **1. Data Transfer Objects (DTOs) & Data Validation**
-Implementation: Replaced raw database entity models (Booking, Room) with specific DTOs (CreateBookingRequestDto, BookingResponseDto, RoomResponseDto). I also implemented IValidatableObject and built-in Data Annotations on the request DTO to ensure data integrity (e.g., ensuring CheckOutDate is strictly after CheckInDate).
-Why:
+- Implementation: Replaced raw database entity models (Booking, Room) with specific DTOs (CreateBookingRequestDto, BookingResponseDto, RoomResponseDto). I also implemented IValidatableObject and built-in Data Annotations on the request DTO to ensure data integrity (e.g., ensuring CheckOutDate is strictly after CheckInDate).
 
+Reason:
 - Prevents "over-posting" vulnerabilities where a user could manipulate internal fields (like an Id).
 - Solves Entity Framework JSON serialization cycle errors (A possible object cycle was detected).
 - ModelState automatically intercepts bad requests before they hit the controller, saving server resources.
 
 **2. Database Seeder**
-Implementation: Added a DatabaseSeeder that runs on application startup to automatically populate the in-memory database with initial Room records.
+- Implementation: Added a DatabaseSeeder that runs on application startup to automatically populate the in-memory database with initial Room records.
 
 **3. FluentValidation**
 - Instead of pulling in a third-party library for complex validation rules, I utilized the built-in IValidatableObject interface.
