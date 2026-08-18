@@ -7,6 +7,7 @@ using HotelRoomBooking.Databases;
 using HotelRoomBooking.Services;
 using HotelRoomBooking.Repositories;
 using Moq;
+using HotelRoomBooking.DTOs;
 
 namespace HotelRoomBookingTest.UnitTest.ServicesTest
 {
@@ -113,20 +114,27 @@ namespace HotelRoomBookingTest.UnitTest.ServicesTest
                 Type = "Single",
                 IsAvailable = true
             };
-            Booking booking = new()
+            BookingRequestDto bookingRequestDto = new()
             {
-                Id = 1,
                 GuestName = "Hariz",
                 RoomId = 1,
                 CheckInDate = DateTime.Now,
                 CheckOutDate = DateTime.Now.AddDays(2)
             };
+            Booking createBookingFromDB = new()
+            {
+                Id = 1,
+                GuestName = "Hariz",
+                RoomId = 1,
+                CheckInDate = bookingRequestDto.CheckInDate,
+                CheckOutDate = bookingRequestDto.CheckOutDate
+            };
             mockRoomRepository.Setup(repo => repo.GetAllRoomsAsync()).ReturnsAsync(new List<Room> { room });
-            mockBookingRepository.Setup(repo => repo.CreateBookingAsync(booking)).ReturnsAsync(booking);
+            mockBookingRepository.Setup(repo => repo.CreateBookingAsync(createBookingFromDB)).ReturnsAsync(createBookingFromDB);
 
             BookingService bookingService = new(mockBookingRepository.Object, mockRoomRepository.Object);
 
-            var result = await bookingService.CreateBookingAsync(booking);
+            var result = await bookingService.CreateBookingAsync(bookingRequestDto);
 
             Assert.True(result.IsSuccess);
         }
@@ -143,7 +151,14 @@ namespace HotelRoomBookingTest.UnitTest.ServicesTest
                 Type = "Single",
                 IsAvailable = true
             };
-            Booking booking = new()
+            BookingRequestDto bookingRequestDto = new()
+            {
+                GuestName = "Hariz",
+                RoomId = 1,
+                CheckInDate = DateTime.Now,
+                CheckOutDate = DateTime.Now.AddDays(2)
+            };
+            Booking createBookingFromDB = new()
             {
                 Id = 1,
                 GuestName = "Hariz",
@@ -152,11 +167,11 @@ namespace HotelRoomBookingTest.UnitTest.ServicesTest
                 CheckOutDate = DateTime.Now.AddDays(2)
             };
             mockRoomRepository.Setup(repo => repo.GetAllRoomsAsync()).ReturnsAsync(new List<Room> { room });
-            mockBookingRepository.Setup(repo => repo.CreateBookingAsync(booking)).ReturnsAsync(booking);
+            mockBookingRepository.Setup(repo => repo.CreateBookingAsync(createBookingFromDB)).ReturnsAsync(createBookingFromDB);
 
             BookingService bookingService = new(mockBookingRepository.Object, mockRoomRepository.Object);
 
-            var result = await bookingService.CreateBookingAsync(booking);
+            var result = await bookingService.CreateBookingAsync(bookingRequestDto);
 
             Assert.False(room.IsAvailable);
         }
@@ -180,9 +195,8 @@ namespace HotelRoomBookingTest.UnitTest.ServicesTest
                 Type = "Single",
                 IsAvailable = true
             };
-            Booking booking = new()
+            BookingRequestDto bookingRequestDto = new()
             {
-                Id = 1,
                 GuestName = "Hariz",
                 RoomId = 1,
                 CheckInDate = DateTime.Now,
@@ -191,10 +205,45 @@ namespace HotelRoomBookingTest.UnitTest.ServicesTest
             mockRoomRepository.Setup(repo => repo.GetAllRoomsAsync()).ReturnsAsync(new List<Room> { unavailableRoom, availableRoom });
             BookingService bookingService = new(mockBookingRepository.Object, mockRoomRepository.Object);
 
-            var result = await bookingService.CreateBookingAsync(booking);
+            var result = await bookingService.CreateBookingAsync(bookingRequestDto);
 
             Assert.False(result.IsSuccess);
             Assert.Contains(availableRoom, result.AvailableRooms!);
         }
+
+        [Fact]
+        public async Task CreateBookingAsync_CheckInDateIsLaterThanCheckOutDate_ShouldReturnNotSuccess()
+        {
+            var mockBookingRepository = new Mock<IBookingRepository>();
+            var mockRoomRepository = new Mock<IRoomRepository>();
+            Room unavailableRoom = new()
+            {
+                Id = 1,
+                Name = "101",
+                Type = "Single",
+                IsAvailable = false
+            };
+            Room availableRoom = new()
+            {
+                Id = 2,
+                Name = "102",
+                Type = "Single",
+                IsAvailable = true
+            };
+            BookingRequestDto bookingRequestDto = new()
+            {
+                GuestName = "Hariz",
+                RoomId = 1,
+                CheckInDate = DateTime.Now.AddDays(3),
+                CheckOutDate = DateTime.Now.AddDays(2)
+            };
+            mockRoomRepository.Setup(repo => repo.GetAllRoomsAsync()).ReturnsAsync(new List<Room> { unavailableRoom, availableRoom });
+            BookingService bookingService = new(mockBookingRepository.Object, mockRoomRepository.Object);
+
+            var result = await bookingService.CreateBookingAsync(bookingRequestDto);
+
+            Assert.False(result.IsSuccess);
+        }
+
     }
 }

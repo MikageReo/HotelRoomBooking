@@ -1,4 +1,5 @@
 ﻿using Microsoft.EntityFrameworkCore.Storage.ValueConversion.Internal;
+using System.Text.Json.Serialization;
 
 namespace HotelRoomBooking.Models
 {
@@ -12,6 +13,5 @@ namespace HotelRoomBooking.Models
 
         public bool IsAvailable { get; set; } = true;
 
-        public ICollection<Booking> Bookings { get; set; } = new List<Booking>();
     }
 }

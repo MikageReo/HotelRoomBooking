@@ -2,6 +2,7 @@
 using HotelRoomBooking.Models;
 using HotelRoomBooking.Services;
 using Microsoft.AspNetCore.Mvc;
+using HotelRoomBooking.DTOs;
 using Moq;
 using System;
 using System.Collections.Generic;
@@ -55,7 +56,14 @@ namespace HotelRoomBookingTest.UnitTest.ControllersTest
         public async Task CreateBooking_OneRoomIsAvailable_ShouldReturn201CreatedStatusCode()
         {
             var mockBookingService = new Mock<IBookingService>();
-            Booking booking = new()
+            BookingRequestDto bookingRequestDto = new()
+            {
+                GuestName = "Hariz",
+                RoomId = 1,
+                CheckInDate = DateTime.Now,
+                CheckOutDate = DateTime.Now.AddDays(2)
+            };
+            Booking createdBookingFromDB = new()
             {
                 Id = 1,
                 GuestName = "Hariz",
@@ -63,10 +71,11 @@ namespace HotelRoomBookingTest.UnitTest.ControllersTest
                 CheckInDate = DateTime.Now,
                 CheckOutDate = DateTime.Now.AddDays(2)
             };
-            mockBookingService.Setup(service => service.CreateBookingAsync(booking)).ReturnsAsync(BookingResult.Success(booking));
+
+            mockBookingService.Setup(service => service.CreateBookingAsync(bookingRequestDto)).ReturnsAsync(BookingResult.Success(createdBookingFromDB));
             BookingsController bookingsController = new(mockBookingService.Object);
 
-            var result = await bookingsController.CreateBooking(booking);
+            var result = await bookingsController.CreateBooking(bookingRequestDto);
 
             Assert.IsType<CreatedAtActionResult>(result);
         }
@@ -76,9 +85,8 @@ namespace HotelRoomBookingTest.UnitTest.ControllersTest
         {
             var mockBookingService = new Mock<IBookingService>();
             var mockRoomService = new Mock<IRoomService>();
-            Booking booking = new()
+            BookingRequestDto bookingRequestDto = new()
             {
-                Id = 1,
                 GuestName = "Hariz",
                 RoomId = 1,
                 CheckInDate = DateTime.Now,
@@ -91,9 +99,9 @@ namespace HotelRoomBookingTest.UnitTest.ControllersTest
                 Type = "Single",
                 IsAvailable = true
             };
-            mockBookingService.Setup(service => service.CreateBookingAsync(booking)).ReturnsAsync(BookingResult.Unavailable([availableRoom]));
+            mockBookingService.Setup(service => service.CreateBookingAsync(bookingRequestDto)).ReturnsAsync(BookingResult.Unavailable([availableRoom]));
 
-            var result = await new BookingsController(mockBookingService.Object).CreateBooking(booking);
+            var result = await new BookingsController(mockBookingService.Object).CreateBooking(bookingRequestDto);
 
             Assert.IsType<BadRequestObjectResult>(result);
         }

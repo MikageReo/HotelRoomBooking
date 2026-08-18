@@ -1,4 +1,5 @@
-﻿using HotelRoomBooking.Models;
+﻿using HotelRoomBooking.DTOs;
+using HotelRoomBooking.Models;
 using HotelRoomBooking.Repositories;
 
 namespace HotelRoomBooking.Services
@@ -12,9 +13,19 @@ namespace HotelRoomBooking.Services
             _roomRepository = roomRepository ?? throw new ArgumentNullException(nameof(roomRepository));
         }
 
-        public async Task<IEnumerable<Room>> GetAllRoomsAsync()
+        public async Task<IEnumerable<RoomResponseDto>> GetAllRoomsAsync()
         {
-            return await _roomRepository.GetAllRoomsAsync();
+            var rooms = await _roomRepository.GetAllRoomsAsync();
+
+            var roomDtos = rooms.Select(r => new RoomResponseDto
+            {
+                Id = r.Id,
+                Name = r.Name,
+                Type = r.Type,
+                IsAvailable = r.IsAvailable
+            });
+
+            return roomDtos;
         }
     }
 }

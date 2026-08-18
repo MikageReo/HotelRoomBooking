@@ -1,9 +1,10 @@
-﻿using HotelRoomBooking.Models;
+﻿using HotelRoomBooking.DTOs;
+using HotelRoomBooking.Models;
 
 namespace HotelRoomBooking.Services
 {
     public interface IRoomService
     {
-        Task<IEnumerable<Room>> GetAllRoomsAsync();
+        Task<IEnumerable<RoomResponseDto>> GetAllRoomsAsync();
     }
 }

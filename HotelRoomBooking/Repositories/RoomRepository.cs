@@ -14,9 +14,7 @@ namespace HotelRoomBooking.Repositories
         }
         public async Task<IEnumerable<Room>> GetAllRoomsAsync()
         {
-            return await _hotelDBContext.Rooms
-                .Where(a => a.IsAvailable)
-                .ToListAsync();
+            return await _hotelDBContext.Rooms.ToListAsync();
         }
     }
 }

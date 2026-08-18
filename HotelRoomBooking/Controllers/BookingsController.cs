@@ -1,8 +1,9 @@
-﻿using Microsoft.AspNetCore.Mvc;
-
-using HotelRoomBooking.Databases;
+﻿using HotelRoomBooking.Databases;
+using HotelRoomBooking.DTOs;
 using HotelRoomBooking.Models;
 using HotelRoomBooking.Services;
+using Microsoft.AspNetCore.Http.HttpResults;
+using Microsoft.AspNetCore.Mvc;
 
 namespace HotelRoomBooking.Controllers
 {
@@ -26,16 +27,33 @@ namespace HotelRoomBooking.Controllers
         }
 
         [HttpPost]
-        public async Task<IActionResult> CreateBooking(Booking booking)
+        public async Task<IActionResult> CreateBooking(BookingRequestDto bookingRequestDto)
         {
-            var created = await _bookingService.CreateBookingAsync(booking);
+            var createdBooking = await _bookingService.CreateBookingAsync(bookingRequestDto);
 
-            if (!created.IsSuccess)
+            if (!createdBooking.IsSuccess)
             {
-                return BadRequest(new { created.Message, created.AvailableRooms });
+                var selectedRoom = createdBooking.AvailableRooms?.Select(room => new RoomResponseDto
+                {
+                    Id = room.Id,
+                    Name = room.Name,
+                    Type = room.Type,
+                    IsAvailable = room.IsAvailable
+                });
+
+                return BadRequest(new { createdBooking.Message, AvailableRooms = selectedRoom });
             }
 
-            return CreatedAtAction(nameof(GetAllBookings), new { id = created.Booking!.Id }, created.Booking);
+            BookingResponseDto bookingResponseDto = new()
+            {
+                Id = createdBooking.Booking!.Id,
+                GuestName = createdBooking.Booking.GuestName,
+                RoomId = createdBooking.Booking.RoomId,
+                CheckInDate = createdBooking.Booking.CheckInDate,
+                CheckOutDate = createdBooking.Booking.CheckOutDate
+            };
+
+            return CreatedAtAction(nameof(GetAllBookings), new { id = createdBooking.Booking!.Id }, createdBooking.Booking);
 
         }
     }
